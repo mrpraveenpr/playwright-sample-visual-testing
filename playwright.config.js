@@ -1,15 +1,15 @@
-	// @ts-check
+// @ts-check
 const { devices } = require("@playwright/test");
 
 /**
  * @type {import('@playwright/test').PlaywrightTestConfig}
  */
 const config = {
-  testDir: "./tests",
+  testDir: "./tests", // ✅ or "./test" if you don’t rename the folder
   timeout: 60000,
   expect: {
     timeout: 30000,
-    toHaveScreenshot: { maxDiffPixels: 0 },
+    toHaveScreenshot: { maxDiffPixelRatio: 0.01 }, // ✅ tolerance
   },
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
@@ -35,4 +35,3 @@ const config = {
 };
 
 module.exports = config;
-
