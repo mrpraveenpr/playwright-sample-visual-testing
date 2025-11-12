@@ -1,19 +1,12 @@
 {
-  "name": "jt-playwright-sample",
+  "name": "playwright-sample-visual-testing",
   "version": "1.0.0",
-  "description": "Init project:\r ```\r npm init\r ```",
-  "main": "index.js",
+  "private": true,
   "scripts": {
-    "all": "npx playwright test tests",
-    "vt": "npx playwright test tests/visual-testing/",
-    "vt-update": "npx playwright test tests/visual-testing/ --update-snapshots"
+    "test": "npx playwright test",
+    "test:update": "npx playwright test --update-snapshots"
   },
-  "author": "jaktestowac.pl",
-  "license": "ISC",
   "devDependencies": {
-    "@playwright/test": "^1.23.1"
-  },
-  "dependencies": {
-    "prettier": "^2.7.1"
+    "@playwright/test": "^1.55.0"
   }
 }
