@@ -23,20 +23,43 @@ jobs:
         with:
           node-version: 18
 
-      # 3️⃣ Install dependencies and Playwright browsers
+      # 3️⃣ (Optional) Ensure OS dependencies are up-to-date
+      - name: Update system packages
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            libasound2 \
+            libnss3 \
+            libxshmfence1 \
+            libgbm1 \
+            libgtk-3-0 \
+            libx264-dev \
+            libdrm2 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libxkbcommon0 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libatk1.0-0 \
+            libatspi2.0-0 \
+            libgdk-pixbuf2.0-0 || true
+
+      # 4️⃣ Install dependencies and Playwright browsers
       - name: Install dependencies
         run: |
           npm ci
-          npx playwright install --with-deps
+          npx playwright install
 
-      # 4️⃣ Run Playwright tests (includes visual comparison)
+      # 5️⃣ Run Playwright visual regression tests
       - name: Run Playwright visual regression tests
         run: |
           npx playwright test --reporter=html
         env:
           CI: true
 
-      # 5️⃣ Always upload the Playwright HTML report
+      # 6️⃣ Always upload the Playwright HTML report
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,7 +68,7 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      # 6️⃣ Upload baseline screenshots for debugging
+      # 7️⃣ Upload baseline screenshots for debugging
       - name: Upload baseline screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -54,7 +77,7 @@ jobs:
           path: tests/**/__snapshots__/
           retention-days: 7
 
-      # 7️⃣ Upload diff screenshots if mismatch occurs
+      # 8️⃣ Upload diff screenshots if mismatch occurs
       - name: Upload diff screenshots
         if: failure()
         uses: actions/upload-artifact@v4
