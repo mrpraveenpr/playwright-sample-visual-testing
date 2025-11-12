@@ -24,30 +24,35 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
-      # 🧩 Step 1: Run ESLint (with Tailwind rules)
-      - name: 🧹 Lint JavaScript and TailwindCSS classes
+      # 🧩 Step 1: Run ESLint (with Tailwind and responsive rules)
+      - name: 🧹 Lint JavaScript, TailwindCSS, and responsive utilities
         run: |
-          npx eslint . --ext .js,.jsx,.ts,.tsx
+          echo "🔍 Running ESLint for code style, Tailwind, and responsive checks..."
+          npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
         continue-on-error: false
 
       # 🧩 Step 2: Run Stylelint for CSS conventions
       - name: 🎨 Check CSS consistency
         run: |
+          echo "🎨 Running Stylelint for CSS code quality..."
           npx stylelint "**/*.css" || echo "No CSS files found"
         continue-on-error: false
 
-      # 🧩 Step 3: Run Accessibility Tests (axe-core)
-      - name: ♿ Accessibility Audits
+      # 🧩 Step 3: Accessibility audit (axe-core)
+      - name: ♿ Accessibility Audits (WCAG + Contrast)
         run: |
+          echo "♿ Running accessibility tests with axe-core..."
           npx playwright test tests/accessibility/axe.spec.js --reporter=dot
         continue-on-error: false
 
-      # 🧩 Step 4: Run Visual Regression Tests
-      - name: 👁️ Visual Regression Tests
+      # 🧩 Step 4: Responsive layout tests (multiple devices)
+      - name: 📱 Responsive Layout Validation
         run: |
+          echo "📱 Running visual regression tests across devices..."
           npx playwright test tests/visual/example.spec.js --reporter=html
         env:
           CI: true
+        continue-on-error: false
 
       # 🧩 Step 5: Upload Playwright HTML Report
       - name: 📊 Upload Playwright Report
@@ -57,3 +62,31 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+      # 🧩 Step 6: Enforce Tailwind Design System Rules
+      - name: 🎨 Validate Tailwind Design System Enforcement
+        run: |
+          echo "🧱 Ensuring no arbitrary colors or fixed-width containers..."
+          # Fail if any arbitrary Tailwind values like [#hex] are used
+          if grep -R "class=.*\[.*\]" src/ tests/; then
+            echo "❌ Arbitrary Tailwind values found — use semantic theme colors only!"
+            exit 1
+          fi
+          # Fail if any fixed-width containers are found
+          if grep -R "max-w-[0-9]" src/ tests/; then
+            echo "❌ Fixed-width container detected — layouts must be fluid!"
+            exit 1
+          fi
+        shell: bash
+        continue-on-error: false
+
+      # 🧩 Step 7: Enforce Design System Documentation Presence
+      - name: 📘 Validate Design System Documentation
+        run: |
+          echo "📘 Checking if design-system.md exists..."
+          if [ ! -f docs/design-system.md ]; then
+            echo "❌ Missing Design System Documentation: docs/design-system.md"
+            exit 1
+          fi
+          echo "✅ Design System Documentation found."
+        continue-on-error: false
