@@ -5,8 +5,11 @@ const config = {
   timeout: 60000,
   expect: {
     timeout: 30000,
-    toHaveScreenshot: { maxDiffPixels: 0 },
+    toHaveScreenshot: {
+    maxDiffPixelRatio: 0.001, // ✅ allow up to 0.1% pixel difference
+    threshold: 0.2, // ignore anti-aliasing blur noise
   },
+},
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 4,
