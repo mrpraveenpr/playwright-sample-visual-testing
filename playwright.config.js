@@ -1,36 +1,35 @@
-// @ts-check
 const { devices } = require("@playwright/test");
 
-/**
- * @type {import('@playwright/test').PlaywrightTestConfig}
- */
 const config = {
-  testDir: "./tests", // ✅ or "./test" if you don’t rename the folder
+  testDir: "./tests",
   timeout: 60000,
   expect: {
     timeout: 30000,
-    toHaveScreenshot: { maxDiffPixelRatio: 0.01 }, // ✅ tolerance
+    toHaveScreenshot: { maxDiffPixels: 0 },
   },
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : 4,
+
   use: {
     baseURL: "https://example.com",
     trace: "retain-on-failure",
     screenshot: "on",
     video: "off",
-    viewport: { width: 1366, height: 768 },
   },
+
   reporter: [
     ["list"],
     ["html", { outputFolder: "playwright-report", open: "never" }],
   ],
+
+  // ✅ Test across multiple devices for responsiveness
   projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
+    { name: "Desktop Chrome", use: { ...devices["Desktop Chrome"] } },
+    { name: "Pixel 5", use: { ...devices["Pixel 5"] } },
+    { name: "iPad Mini Landscape", use: { ...devices["iPad Mini"], viewport: { width: 1024, height: 768 } } },
   ],
+
   outputDir: "test-results/",
 };
 
