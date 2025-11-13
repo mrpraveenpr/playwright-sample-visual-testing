@@ -1,15 +1,18 @@
 const { test, expect } = require("@playwright/test");
 
-test("App handles offline mode", async ({ page, context }) => {
-  await page.goto("https://example.com");
+test("App shows offline message", async ({ page }) => {
+  await page.goto("/");
 
   // go offline
-  await context.setOffline(true);
+  await page.context().setOffline(true);
 
-  // reload offline to test offline UX
-  await page.reload();
+  // reload offline
+  const response = await page.reload({ waitUntil: "domcontentloaded" }).catch(() => null);
 
-  // expected to show some offline UI element
-  // Adapt this if your app shows a custom message
-  await expect(page).toHaveTitle(""); // offline blank title is expected
+  // verify offline UI
+  const offlineEl = page.locator("#offline-message, .offline-banner, text=Offline");
+  await expect(offlineEl).toBeVisible();
+
+  // back online
+  await page.context().setOffline(false);
 });
