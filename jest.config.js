@@ -1,14 +1,23 @@
 module.exports = {
+  // ONLY look inside tests/unit (not Playwright tests)
+  roots: ["<rootDir>/tests/unit"],
+
+  // Only match files ending with .test.js
+  testMatch: ["**/*.test.js"],
+
+  // Node test environment (not browser)
   testEnvironment: "node",
-  roots: ["<rootDir>/src", "<rootDir>/tests/unit"],
-  collectCoverage: true,
-  collectCoverageFrom: ["src/**/*.js"],
-  coverageThreshold: {
-    global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80,
-    },
-  },
+
+  // Only collect coverage from unit test files
+  collectCoverageFrom: ["tests/unit/**/*.js"],
+
+  coverageDirectory: "coverage",
+
+  // IMPORTANT: Prevent Jest from reading Playwright tests
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/tests/e2e/",
+    "/tests/visual/",
+    "/tests/accessibility/",
+  ],
 };

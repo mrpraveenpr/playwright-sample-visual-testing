@@ -6,6 +6,7 @@ const { devices } = require("@playwright/test");
  */
 const config = {
   testDir: "./tests",
+  testIgnore: ["tests/unit/**"],   // <-- ADD THIS LINE
   timeout: 60000,
 
   expect: {
@@ -32,9 +33,7 @@ const config = {
     ["html", { outputFolder: "playwright-report", open: "never" }],
   ],
 
-  // 🚀 ALL device + browser testing here
   projects: [
-    // BROWSER MATRIX
     {
       name: "Chromium",
       use: { ...devices["Desktop Chrome"] },
@@ -47,8 +46,6 @@ const config = {
       name: "WebKit",
       use: { ...devices["Desktop Safari"] },
     },
-
-    // RESPONSIVE DEVICES
     {
       name: "Pixel 5",
       use: { ...devices["Pixel 5"] },
