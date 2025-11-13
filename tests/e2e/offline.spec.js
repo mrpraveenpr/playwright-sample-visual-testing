@@ -9,11 +9,13 @@ test("App handles offline mode", async ({ page }) => {
   // reload offline (ignore error)
   await page.reload({ waitUntil: "domcontentloaded" }).catch(() => null);
 
-  // expect offline UI (replace selector with real one)
-  const offlineBanner = page.locator("#offline-message, .offline-banner, text=Offline");
+  // robust offline selector
+  const offlineBanner = page
+    .locator("#offline-message")
+    .or(page.locator(".offline-banner"))
+    .or(page.getByText(/offline/i));
 
-  // make this flexible for any real UI
-  await expect(offlineBanner).toBeVisible();
+  await expect(offlineBanner).toBeVisible({ timeout: 5000 });
 
   // back online
   await page.context().setOffline(false);
