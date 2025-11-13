@@ -1,0 +1,8 @@
+.github/workflows/playwright.yml
+tests/
+  ├── accessibility/axe.spec.js
+  ├── visual/example.spec.js
+docs/
+  └── design-system.md   ← must exist
+tailwind.config.js       ← with centralized color palette
+playwright.config.js

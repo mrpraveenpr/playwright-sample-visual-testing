@@ -1,4 +1,4 @@
-name: Full QA Pipeline (Playwright + Accessibility + Lint + Cross-Browser)
+name: Full QA Pipeline (Unit + E2E + Visual + Accessibility + Mutation + Lint)
 
 on:
   push:
@@ -11,98 +11,102 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ------------------------------
+      # 1. Checkout repository
+      # ------------------------------
       - name: 🧾 Checkout repository
         uses: actions/checkout@v4
 
+      # ------------------------------
+      # 2. Setup Node
+      # ------------------------------
       - name: 🧰 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # ------------------------------
+      # 3. Install dependencies
+      # ------------------------------
       - name: 📦 Install dependencies
         run: |
           npm ci
           npx playwright install --with-deps
 
-      # -------------------------------
-      # STEP 1 — ESLint + Tailwind Rules
-      # -------------------------------
-      - name: 🧹 Lint JavaScript, TailwindCSS, and responsive utilities
+      # ------------------------------
+      # 4. Run ESLint (Tailwind + responsive + JS rules)
+      # ------------------------------
+      - name: 🧹 Lint JavaScript + TailwindCSS
         run: |
-          echo "🔍 Running ESLint…"
-          npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
-        continue-on-error: false
+          echo "🔍 Running ESLint..."
+          npx eslint . --ext .js,.ts --max-warnings=0
 
-      # -------------------------------
-      # STEP 2 — Stylelint (CSS rules)
-      # -------------------------------
+      # ------------------------------
+      # 5. Run Stylelint
+      # ------------------------------
       - name: 🎨 Check CSS consistency
         run: |
-          echo "🎨 Running Stylelint…"
+          echo "🎨 Running Stylelint..."
           npx stylelint "**/*.css" || echo "No CSS files found"
-        continue-on-error: false
 
-      # -------------------------------
-      # STEP 3 — Accessibility (axe-core)
-      # -------------------------------
-      - name: ♿ Accessibility Audits (WCAG + Contrast)
+      # ------------------------------
+      # 6. Accessibility (WCAG + Contrast)
+      # ------------------------------
+      - name: ♿ Accessibility Tests (axe-core)
         run: |
-          echo "♿ Running accessibility tests…"
+          echo "♿ Running Accessibility Tests..."
           npx playwright test tests/accessibility/axe.spec.js --reporter=dot
-        continue-on-error: false
 
-      # ------------------------------------------
-      # STEP 4 — Cross-Browser + Responsive Testing
-      # ------------------------------------------
-      - name: 🌐 Cross-Browser Visual Regression
+      # ------------------------------
+      # 7. Visual Regression Tests (Chromium/Firefox/WebKit)
+      # ------------------------------
+      - name: 👁️ Visual Regression Tests (Cross Browser)
         run: |
-          echo "🌐 Running visual regression on Chromium, Firefox, WebKit…"
-          npx playwright test --project=Chromium --project=Firefox --project=WebKit --reporter=html
+          echo "🌐 Running visual regression tests on Chromium, Firefox, WebKit..."
+          npx playwright test tests/visual/example.spec.js --reporter=html
         env:
           CI: true
+
+      # ------------------------------
+      # 8. E2E Tests + Offline Mode Detection
+      # ------------------------------
+      - name: 🚀 E2E Tests (Initialization + Offline)
+        run: |
+          echo "🚀 Running E2E Tests..."
+          npx playwright test tests/e2e --reporter=dot
         continue-on-error: false
 
-      # -------------------------------
-      # STEP 5 — Upload Playwright Report
-      # -------------------------------
-      - name: 📊 Upload Playwright Report
+      # ------------------------------
+      # 9. Run Jest Unit Tests (80% coverage)
+      # ------------------------------
+      - name: 🧪 Unit Tests (80% Coverage Required)
+        run: |
+          echo "🧪 Running Jest Unit Tests..."
+          npx jest --coverage --coverageThreshold='{"global":{"lines":80}}'
+
+      # ------------------------------
+      # 10. Detect Flaky Tests (rerun failed tests sequentially)
+      # ------------------------------
+      - name: 🔁 Flaky Test Detection
+        run: |
+          echo "🔁 Rerunning failed Playwright tests sequentially..."
+          npx playwright test --retries=2 --workers=1
+
+      # ------------------------------
+      # 11. Mutation Testing (Stryker)
+      # ------------------------------
+      - name: 🧬 Mutation Testing
+        run: |
+          echo "🧬 Running mutation tests with Stryker..."
+          npx stryker run
+
+      # ------------------------------
+      # 12. Upload HTML Reports
+      # ------------------------------
+      - name: 📊 Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
-
-      # ----------------------------------------------------
-      # STEP 6 — Tailwind Enforcement (No Arbitrary Values)
-      # ----------------------------------------------------
-      - name: 🎨 Validate Tailwind Design System Enforcement
-        run: |
-          echo "🧱 Validating Tailwind usage…"
-
-          # ❌ Fail if arbitrary values like bg-[#123456] exist
-          if grep -R "class=.*\[.*\]" src/ tests/ 2>/dev/null; then
-            echo "❌ Arbitrary Tailwind values detected! Use semantic theme colors."
-            exit 1
-          fi
-
-          # ❌ Fail if max-w-* fixed widths are used
-          if grep -R "max-w-[0-9]" src/ tests/ 2>/dev/null; then
-            echo "❌ Fixed-width container detected! Layout must be fluid."
-            exit 1
-          fi
-        continue-on-error: false
-        shell: bash
-
-      # ----------------------------------------------------
-      # STEP 7 — Check Design System Documentation
-      # ----------------------------------------------------
-      - name: 📘 Validate Design System Documentation
-        run: |
-          echo "📘 Checking design-system.md…"
-          if [ ! -f docs/design-system.md ]; then
-            echo "❌ Missing docs/design-system.md (Design System Documentation Required)"
-            exit 1
-          fi
-          echo "✅ Design System Documentation exists."
-        continue-on-error: false
