@@ -1,4 +1,4 @@
-name: Full QA Pipeline (Playwright + Accessibility + Lint)
+name: Full QA Pipeline (Playwright + Accessibility + Lint + Cross-Browser)
 
 on:
   push:
@@ -24,37 +24,47 @@ jobs:
           npm ci
           npx playwright install --with-deps
 
-      # 🧩 Step 1: Run ESLint (with Tailwind and responsive rules)
+      # -------------------------------
+      # STEP 1 — ESLint + Tailwind Rules
+      # -------------------------------
       - name: 🧹 Lint JavaScript, TailwindCSS, and responsive utilities
         run: |
-          echo "🔍 Running ESLint for code style, Tailwind, and responsive checks..."
+          echo "🔍 Running ESLint…"
           npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
         continue-on-error: false
 
-      # 🧩 Step 2: Run Stylelint for CSS conventions
+      # -------------------------------
+      # STEP 2 — Stylelint (CSS rules)
+      # -------------------------------
       - name: 🎨 Check CSS consistency
         run: |
-          echo "🎨 Running Stylelint for CSS code quality..."
+          echo "🎨 Running Stylelint…"
           npx stylelint "**/*.css" || echo "No CSS files found"
         continue-on-error: false
 
-      # 🧩 Step 3: Accessibility audit (axe-core)
+      # -------------------------------
+      # STEP 3 — Accessibility (axe-core)
+      # -------------------------------
       - name: ♿ Accessibility Audits (WCAG + Contrast)
         run: |
-          echo "♿ Running accessibility tests with axe-core..."
+          echo "♿ Running accessibility tests…"
           npx playwright test tests/accessibility/axe.spec.js --reporter=dot
         continue-on-error: false
 
-      # 🧩 Step 4: Responsive layout tests (multiple devices)
-      - name: 📱 Responsive Layout Validation
+      # ------------------------------------------
+      # STEP 4 — Cross-Browser + Responsive Testing
+      # ------------------------------------------
+      - name: 🌐 Cross-Browser Visual Regression
         run: |
-          echo "📱 Running visual regression tests across devices..."
-          npx playwright test tests/visual/example.spec.js --reporter=html
+          echo "🌐 Running visual regression on Chromium, Firefox, WebKit…"
+          npx playwright test --project=Chromium --project=Firefox --project=WebKit --reporter=html
         env:
           CI: true
         continue-on-error: false
 
-      # 🧩 Step 5: Upload Playwright HTML Report
+      # -------------------------------
+      # STEP 5 — Upload Playwright Report
+      # -------------------------------
       - name: 📊 Upload Playwright Report
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,30 +73,36 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-      # 🧩 Step 6: Enforce Tailwind Design System Rules
+      # ----------------------------------------------------
+      # STEP 6 — Tailwind Enforcement (No Arbitrary Values)
+      # ----------------------------------------------------
       - name: 🎨 Validate Tailwind Design System Enforcement
         run: |
-          echo "🧱 Ensuring no arbitrary colors or fixed-width containers..."
-          # Fail if any arbitrary Tailwind values like [#hex] are used
-          if grep -R "class=.*\[.*\]" src/ tests/; then
-            echo "❌ Arbitrary Tailwind values found — use semantic theme colors only!"
-            exit 1
-          fi
-          # Fail if any fixed-width containers are found
-          if grep -R "max-w-[0-9]" src/ tests/; then
-            echo "❌ Fixed-width container detected — layouts must be fluid!"
-            exit 1
-          fi
-        shell: bash
-        continue-on-error: false
+          echo "🧱 Validating Tailwind usage…"
 
-      # 🧩 Step 7: Enforce Design System Documentation Presence
+          # ❌ Fail if arbitrary values like bg-[#123456] exist
+          if grep -R "class=.*\[.*\]" src/ tests/ 2>/dev/null; then
+            echo "❌ Arbitrary Tailwind values detected! Use semantic theme colors."
+            exit 1
+          fi
+
+          # ❌ Fail if max-w-* fixed widths are used
+          if grep -R "max-w-[0-9]" src/ tests/ 2>/dev/null; then
+            echo "❌ Fixed-width container detected! Layout must be fluid."
+            exit 1
+          fi
+        continue-on-error: false
+        shell: bash
+
+      # ----------------------------------------------------
+      # STEP 7 — Check Design System Documentation
+      # ----------------------------------------------------
       - name: 📘 Validate Design System Documentation
         run: |
-          echo "📘 Checking if design-system.md exists..."
+          echo "📘 Checking design-system.md…"
           if [ ! -f docs/design-system.md ]; then
-            echo "❌ Missing Design System Documentation: docs/design-system.md"
+            echo "❌ Missing docs/design-system.md (Design System Documentation Required)"
             exit 1
           fi
-          echo "✅ Design System Documentation found."
+          echo "✅ Design System Documentation exists."
         continue-on-error: false

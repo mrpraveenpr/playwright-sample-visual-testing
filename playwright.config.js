@@ -11,9 +11,7 @@ const config = {
   expect: {
     timeout: 30000,
     toHaveScreenshot: {
-      // ✅ Allow up to 0.1% pixel difference (ignore tiny rendering noise)
       maxDiffPixelRatio: 0.003,
-      // ✅ Ignore subpixel-level anti-aliasing blur
       threshold: 0.2,
     },
   },
@@ -34,12 +32,23 @@ const config = {
     ["html", { outputFolder: "playwright-report", open: "never" }],
   ],
 
-  // ✅ Test across multiple devices for responsiveness
+  // 🚀 ALL device + browser testing here
   projects: [
+    // BROWSER MATRIX
     {
-      name: "Desktop Chrome",
+      name: "Chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "Firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "WebKit",
+      use: { ...devices["Desktop Safari"] },
+    },
+
+    // RESPONSIVE DEVICES
     {
       name: "Pixel 5",
       use: { ...devices["Pixel 5"] },
