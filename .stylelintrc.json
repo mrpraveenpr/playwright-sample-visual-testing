@@ -1,5 +1,11 @@
 {
   "extends": ["stylelint-config-standard"],
+  "ignoreFiles": [
+    "coverage/**",
+    "playwright-report/**",
+    "test-results/**",
+    "reports/**"
+  ],
   "rules": {
     "declaration-property-value-disallowed-list": {
       "width": ["/px$/"],

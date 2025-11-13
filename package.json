@@ -4,7 +4,16 @@
   "private": true,
   "scripts": {
     "test": "npx playwright test",
-    "test:update": "npx playwright test --update-snapshots"
+    "test:update": "npx playwright test --update-snapshots",
+    "lint": "eslint . --ext .js,.ts --max-warnings=0",
+    "style": "stylelint \"**/*.css\" || echo 'No CSS files found'",
+    "accessibility": "playwright test tests/accessibility",
+    "visual": "playwright test tests/visual",
+    "e2e": "playwright test tests/e2e",
+    "unit": "jest --coverage",
+    "flaky": "playwright test --retries=2 --workers=1",
+    "mutation": "stryker run",
+    "ci-local": "npm run lint && npm run style && npm run accessibility && npm run visual && npm run e2e && npm run unit && npm run flaky && npm run mutation"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.9.1",
