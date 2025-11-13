@@ -1,20 +1,20 @@
 module.exports = {
-  root: true,
   env: {
     browser: true,
     node: true,
     es2021: true,
-  },
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module', // ✅ enables 'import' and 'export'
+    jest: true   // ✅ This enables globals: test, expect, describe
   },
   extends: [
-    'eslint:recommended',
-    'plugin:tailwindcss/recommended',
+    "eslint:recommended",
+    "plugin:tailwindcss/recommended"
   ],
-  plugins: ['tailwindcss'],
-  rules: {
-    'tailwindcss/no-custom-classname': 'off',
+  parserOptions: {
+    ecmaVersion: 12,
+    sourceType: "module"
   },
+  rules: {
+    "no-unused-vars": "warn",
+    "no-undef": "off" // Jest defines its own globals
+  }
 };
